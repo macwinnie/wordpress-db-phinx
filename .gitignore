@@ -1,0 +1,11 @@
+# system files
+.DS_*
+
+# environmental variables
+.env*
+
+# install files
+vendor
+node_modules
+
+wp-content
