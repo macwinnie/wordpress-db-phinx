@@ -11,8 +11,42 @@ class DBUtilisator {
 
     protected static $scriptname = 'phinx.php';
 
-    public function __construct() {
-        $base = realpath( static::basePath() );
+    public static function get_wp_main_path() {
+        $wp_main_path = realpath( __DIR__ );
+        while (
+            ! file_exists( implode( DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-admin' ] ) ) and
+            ! file_exists( implode( DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-content' ] ) ) and
+            ! file_exists( implode( DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-load.php' ] ) )
+        ) {
+            $wp_main_path = realpath( dirname( $wp_main_path ));
+            if ( $wp_main_path == DIRECTORY_SEPARATOR ) {
+                throw new \Exception("No WordPress installation found.", 1);
+            }
+        }
+        return $wp_main_path;
+    }
+
+    protected static function basePath() {
+        $vendorpath = realpath(
+            dirname( # macwinnie
+                dirname( # macwinnie/wp-db-phinx-helper
+                    dirname( # macwinnie/wp-db-phinx-helper/src
+                        __FILE__
+                    )
+                )
+            )
+        );
+
+        $basepath = dirname($vendorpath);
+        while ( ! file_exists( implode( DIRECTORY_SEPARATOR, [ $basepath, 'composer.json' ] ) ) ) {
+            $basepath = dirname($basepath);
+        }
+
+        return $basepath;
+    }
+
+    protected static funtion get_phinx_config () {
+        $base = static::basePath();
 
         if ( ! file_exists( implode(DIRECTORY_SEPARATOR, [$base, static::$scriptname]) ) ) {
             static::setup();
@@ -25,7 +59,7 @@ class DBUtilisator {
             $dbhost_parts[] = "3306";
         }
 
-        $this->phinx_config = [
+        $phinx_config = [
             'paths' => [
                 'migrations' => implode( DIRECTORY_SEPARATOR, [ $base, 'db', 'migrations' ] ),
                 'seeds' => implode( DIRECTORY_SEPARATOR, [ $base, 'db', 'seeds' ] ),
@@ -49,38 +83,19 @@ class DBUtilisator {
         ];
     }
 
-    public function get_phinx_config() {
-        return $this->phinx_config;
-    }
+    protected static function prepare_phinx() {
+        $phinx_config = static::get_phinx_config();
 
-    public function db_migrate() {
-        $phinx = new Manager(
-            new Config($this->phinx_config),
+        return new Manager(
+            new Config($phinx_config),
             new StringInput(' '),
             new NullOutput()
         );
+    }
 
-        // Run any migrations.
+    public static function db_migrate() {
+        $phinx = static::prepare_phinx();
         $phinx->migrate('wordpress');
-    }
-
-    public static function get_wp_main_path() {
-        $wp_main_path = realpath( __DIR__ );
-        while (
-            ! file_exists( implode( DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-admin' ] ) ) and
-            ! file_exists( implode( DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-content' ] ) ) and
-            ! file_exists( implode( DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-load.php' ] ) )
-        ) {
-            $wp_main_path = realpath( dirname( $wp_main_path ));
-            if ( $wp_main_path == DIRECTORY_SEPARATOR ) {
-                throw new \Exception("No WordPress installation found.", 1);
-            }
-        }
-        return $wp_main_path;
-    }
-
-    protected static function basePath() {
-        return dirname(\Composer\Factory::getComposerFile());
     }
 
     public static function setup() {
@@ -88,6 +103,16 @@ class DBUtilisator {
         $destination = implode(DIRECTORY_SEPARATOR, [ static::basePath(), static::$scriptname,]);
         touch($destination);
         copy($phinxfile, $destination);
+        static::db_migrate();
+    }
+
+    public static function plugin_activation_method () {
+        static::setup();
+    }
+
+    public static function plugin_uninstall_method () {
+        $phinx = static::prepare_phinx();
+        $phinx->rollback('wordpress', 'all', true);
     }
 
 }
