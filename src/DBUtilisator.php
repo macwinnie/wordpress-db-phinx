@@ -9,8 +9,14 @@ use Symfony\Component\Console\Output\NullOutput;
 
 class DBUtilisator {
 
+    protected static $scriptname = 'phinx.php';
+
     public function __construct() {
-        $base = realpath( dirname( __DIR__ ));
+        $base = realpath( static::basePath() );
+
+        if ( ! file_exists( implode(DIRECTORY_SEPARATOR, [$base, static::$scriptname]) ) ) {
+            static::setup();
+        }
 
         global $wpdb;
 
@@ -73,10 +79,13 @@ class DBUtilisator {
         return $wp_main_path;
     }
 
+    protected static function basePath() {
+        return dirname(\Composer\Factory::getComposerFile());
+    }
+
     public static function setup() {
-        $scriptname = 'phinx.php';
-        $phinxfile = implode(DIRECTORY_SEPARATOR, [ dirname(dirname(__FILE__)), 'files', $scriptname,]);
-        $destination = implode(DIRECTORY_SEPARATOR, [ dirname(\Composer\Factory::getComposerFile()), $scriptname,]);
+        $phinxfile = implode(DIRECTORY_SEPARATOR, [ dirname(dirname(__FILE__)), 'files', static::$scriptname,]);
+        $destination = implode(DIRECTORY_SEPARATOR, [ static::basePath(), static::$scriptname,]);
         touch($destination);
         copy($phinxfile, $destination);
     }
