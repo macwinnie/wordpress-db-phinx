@@ -49,7 +49,7 @@ class DBUtilisator {
         return $basepath;
     }
 
-    protected static function get_phinx_config () {
+    public static function get_phinx_config () {
         $base = static::basePath();
 
         global $wpdb;
