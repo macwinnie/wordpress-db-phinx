@@ -24,3 +24,5 @@ class MyPlugin extends DBUtilisator {
 }
 
 ```
+
+The static function `static::basePath()` can be used to get your Plugin absolute path on the webserver – and will also check if the Phinx config file is present in the base directory of your Plugin.

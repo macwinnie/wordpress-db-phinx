@@ -42,15 +42,15 @@ class DBUtilisator {
             $basepath = dirname($basepath);
         }
 
+        if ( ! file_exists( implode(DIRECTORY_SEPARATOR, [$basepath, static::$scriptname]) ) ) {
+            static::setup();
+        }
+
         return $basepath;
     }
 
-    protected static funtion get_phinx_config () {
+    protected static function get_phinx_config () {
         $base = static::basePath();
-
-        if ( ! file_exists( implode(DIRECTORY_SEPARATOR, [$base, static::$scriptname]) ) ) {
-            static::setup();
-        }
 
         global $wpdb;
 
