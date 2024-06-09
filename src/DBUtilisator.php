@@ -26,7 +26,7 @@ class DBUtilisator {
         return $wp_main_path;
     }
 
-    protected static function basePath() {
+    protected static function basePath($checkSetup = true) {
         $vendorpath = realpath(
             dirname( # macwinnie
                 dirname( # macwinnie/wp-db-phinx-helper
@@ -42,7 +42,7 @@ class DBUtilisator {
             $basepath = dirname($basepath);
         }
 
-        if ( ! file_exists( implode(DIRECTORY_SEPARATOR, [$basepath, static::$scriptname]) ) ) {
+        if ( $checkSetup and ! file_exists( implode(DIRECTORY_SEPARATOR, [$basepath, static::$scriptname]) ) ) {
             static::setup();
         }
 
@@ -81,6 +81,8 @@ class DBUtilisator {
             ],
             'version_order' => 'creation' # change to env variable?
         ];
+
+        return $phinx_config;
     }
 
     protected static function prepare_phinx() {
@@ -100,7 +102,7 @@ class DBUtilisator {
 
     public static function setup() {
         $phinxfile = implode(DIRECTORY_SEPARATOR, [ dirname(dirname(__FILE__)), 'files', static::$scriptname,]);
-        $destination = implode(DIRECTORY_SEPARATOR, [ static::basePath(), static::$scriptname,]);
+        $destination = implode(DIRECTORY_SEPARATOR, [ static::basePath(false), static::$scriptname,]);
         touch($destination);
         copy($phinxfile, $destination);
         static::db_migrate();
