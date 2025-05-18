@@ -1,24 +1,25 @@
 {
-    "name": "macwinnie/wp-db-phinx-helper",
-    "description": "Helper for WordPress plugins to be able to use [Phinx](https://phinx.org/) for DB migrations",
-    "type": "library",
-    "require": {
-        "robmorgan/phinx": "^0.16.1",
-        "composer/composer": "^2.7"
-    },
-    "license": "Apache-2.0",
-    "autoload": {
-        "psr-4": {
-            "Macwinnie\\WpDbPhinxHelper\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "macwinnie",
-            "email": "dev@macwinnie.me"
-        }
-    ],
-    "post-package-install": [
-        "Macwinnie\\WpDbPhinxHelper\\DBUtilisator::setup"
-    ]
+  "name": "macwinnie/wp-db-phinx-helper",
+  "description": "Helper for WordPress plugins to be able to use [Phinx](https://phinx.org/) for DB migrations",
+  "version": "0.1.6",
+  "type": "library",
+  "require": {
+    "robmorgan/phinx": "^0.16.1",
+    "composer/composer": "^2.7"
+  },
+  "license": "Apache-2.0",
+  "autoload": {
+    "psr-4": {
+      "Macwinnie\\WpDbPhinxHelper\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "macwinnie",
+      "email": "dev@macwinnie.me"
+    }
+  ],
+  "post-package-install": [
+    "Macwinnie\\WpDbPhinxHelper\\DBUtilisator::setup"
+  ]
 }

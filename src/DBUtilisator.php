@@ -9,8 +9,29 @@ use Symfony\Component\Console\Output\NullOutput;
 
 class DBUtilisator {
 
-    protected static $scriptname = 'phinx.php';
+    /**
+     * The protected static variable is the name of the phinx config file residing in the
+     * plugin root folder. Not to be changed.
+     * @var string
+     */
+    protected static $scriptname = "phinx.php";
 
+    /**
+     * https://book.cakephp.org/phinx/0/en/configuration.html#version-order
+     * @var string
+     */
+    protected static $phinx_version_order = "creation";
+
+    /**
+     * name of the table (without WP DB Prefix) the executed migrations are documented
+     * @var string
+     */
+    protected static $phinx_migration_table = "phinxlog";
+
+    /**
+     * method to retrieve the root path of the wordpress installation
+     * @return string root path of WordPress, not plugin
+     */
     public static function get_wp_main_path() {
         $wp_main_path = realpath( __DIR__ );
         while (
@@ -26,6 +47,11 @@ class DBUtilisator {
         return $wp_main_path;
     }
 
+    /**
+     * retrieve base path of plugin – or at least the closest path containing a `composer.json` file
+     * @param  boolean $checkSetup shall the Phinx setup be checked? Default is `true`.
+     * @return string              plugin path / base path of closest location containing a `composer.json` file
+     */
     protected static function basePath($checkSetup = true) {
         $vendorpath = realpath(
             dirname( # macwinnie
@@ -49,6 +75,10 @@ class DBUtilisator {
         return $basepath;
     }
 
+    /**
+     * building the phinx config out of WordPress variables to not keep duplicate config
+     * @return [string] Phinx config for WordPress, see https://book.cakephp.org/phinx/0/en/configuration.html
+     */
     public static function get_phinx_config () {
         $base = static::basePath();
 
@@ -65,7 +95,7 @@ class DBUtilisator {
                 'seeds' => implode( DIRECTORY_SEPARATOR, [ $base, 'db', 'seeds' ] ),
             ],
             'environments' => [
-                'default_migration_table' => 'phinxlog', # change to env variable?
+                'default_migration_table' => $wpdb->prefix . static::phinx_migration_table,
                 'default_environment' => 'wordpress',
                 'wordpress' => [
                     'adapter' => 'mysql',
@@ -79,12 +109,16 @@ class DBUtilisator {
                     'table_prefix' => $wpdb->prefix,
                 ]
             ],
-            'version_order' => 'creation' # change to env variable?
+            'version_order' => static::phinx_version_order,
         ];
 
         return $phinx_config;
     }
 
+    /**
+     * prepare Phinx for execution
+     * @return Phinx\Migration\Manager Phinx Manager object to interact with
+     */
     protected static function prepare_phinx() {
         $phinx_config = static::get_phinx_config();
 
@@ -95,24 +129,45 @@ class DBUtilisator {
         );
     }
 
-    public static function db_migrate() {
+    /**
+     * method to actually run migrations
+     * @return void
+     */
+    public static function db_migrate(): void {
         $phinx = static::prepare_phinx();
         $phinx->migrate('wordpress');
     }
 
-    public static function setup() {
+    /**
+     * setup Phinx – and place `phinx.php` script template in Plugin root if it does not already
+     * exist there, so config can be applied.
+     * @return void
+     */
+    public static function setup(): void {
         $phinxfile = implode(DIRECTORY_SEPARATOR, [ dirname(dirname(__FILE__)), 'files', static::$scriptname,]);
         $destination = implode(DIRECTORY_SEPARATOR, [ static::basePath(false), static::$scriptname,]);
-        touch($destination);
-        copy($phinxfile, $destination);
+        if ( ! file_exists($destination) ) {
+            touch($destination);
+            copy($phinxfile, $destination);
+        }
         static::db_migrate();
     }
 
-    public static function plugin_activation_method () {
+    /**
+     * plugin activation method that shall be called on plugin activation hook – needs to be called
+     * in child classes!
+     * @return void
+     */
+    public static function plugin_activation_method (): void {
         static::setup();
     }
 
-    public static function plugin_uninstall_method () {
+    /**
+     * plugin uninstall method that shall be called on plugin activation hook – needs to be called
+     * in child classes!
+     * @return void
+     */
+    public static function plugin_uninstall_method (): void {
         $phinx = static::prepare_phinx();
         $phinx->rollback('wordpress', 'all', true);
     }

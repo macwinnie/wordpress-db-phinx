@@ -2,13 +2,13 @@
 
 This helper allows you to use [Phinx](https://phinx.org/) for defining Database migrations. The placed config file `phinx.php` will use the Wordpress Configured Database.
 
-For Phinx being able to work, from your plugin directory run on a bash cli:
+You can install this helper library by using `composer`:
 
-```sh
-cp vendor/macwinnie/wp-db-phinx-helper/files/phinx.php ./
+```
+composer require macwinnie/wp-db-phinx-helper
 ```
 
-Also possible is to expand the `Macwinnie\WpDbPhinxHelper\DBUtilisator` class by your Plugin-Class:
+It is recommended to expand the `Macwinnie\WpDbPhinxHelper\DBUtilisator` class by your Plugin-Class:
 
 ```php
 
@@ -26,3 +26,9 @@ class MyPlugin extends DBUtilisator {
 ```
 
 The static function `static::basePath()` can be used to get your Plugin absolute path on the webserver – and will also check if the Phinx config file is present in the base directory of your Plugin.
+
+## Folder structure
+
+Your Database migrations shall reside within `db/migrations`, Database seeds within `db/seeds` as childpath of your WordPress plugin.
+
+Phinx takes over creation of paths as you follow the [official documentation](https://book.cakephp.org/phinx/0/en/commands.html). The `phinx` executable can be found in `vendor/bin/phinx` as you install this helper library via `composer`.
