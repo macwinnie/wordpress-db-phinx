@@ -1,7 +1,7 @@
 {
   "name": "macwinnie/wp-db-phinx-helper",
   "description": "Helper for WordPress plugins to be able to use [Phinx](https://phinx.org/) for DB migrations",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "type": "library",
   "require": {
     "robmorgan/phinx": "^0.16.1",

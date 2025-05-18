@@ -95,7 +95,7 @@ class DBUtilisator {
                 'seeds' => implode( DIRECTORY_SEPARATOR, [ $base, 'db', 'seeds' ] ),
             ],
             'environments' => [
-                'default_migration_table' => $wpdb->prefix . static::phinx_migration_table,
+                'default_migration_table' => $wpdb->prefix . static::$phinx_migration_table,
                 'default_environment' => 'wordpress',
                 'wordpress' => [
                     'adapter' => 'mysql',
@@ -109,7 +109,7 @@ class DBUtilisator {
                     'table_prefix' => $wpdb->prefix,
                 ]
             ],
-            'version_order' => static::phinx_version_order,
+            'version_order' => static::$phinx_version_order,
         ];
 
         return $phinx_config;
