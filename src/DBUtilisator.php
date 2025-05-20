@@ -7,7 +7,7 @@ use Phinx\Migration\Manager;
 use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\NullOutput;
 
-class DBUtilisator {
+abstract class DBUtilisator {
 
     /**
      * The protected static variable is the name of the phinx config file residing in the
@@ -15,6 +15,34 @@ class DBUtilisator {
      * @var string
      */
     protected static $scriptname = "phinx.php";
+
+    /**
+     * In your plugin main file, you should define a constant retrieving the plugin main path
+     *
+     * ```php
+     * <?php
+     * // ...
+     * define('PLUGIN_NAME_PLUGIN_DIR', plugin_dir_path(__FILE__));
+     * // ...
+     * ```
+     *
+     * In `DBUtilisator` extension, you must define a protected static method `get_plugin_dir`
+     * where you should just return the value of such a defined constant:
+     *
+     * ```php
+     * <?php
+     * // ...
+     * protected static function get_plugin_dir(): string {
+     *     return PLUGIN_NAME_PLUGIN_DIR;
+     * }
+     * // ...
+     * ```
+     *
+     * Make sure, your constant is a uique name which does not cause name conflicts!
+     *
+     * @return string plugin root path
+     */
+    abstract protected static function get_plugin_dir(): string;
 
     /**
      * https://book.cakephp.org/phinx/0/en/configuration.html#version-order
@@ -48,22 +76,13 @@ class DBUtilisator {
     }
 
     /**
-     * retrieve base path of plugin – or at least the closest path containing a `composer.json` file
+     * Using the static method `get_plugin_dir` to do some directory retrievals
+     *
      * @param  boolean $checkSetup shall the Phinx setup be checked? Default is `true`.
      * @return string              plugin path / base path of closest location containing a `composer.json` file
      */
     protected static function basePath($checkSetup = true) {
-        $vendorpath = realpath(
-            dirname( # macwinnie
-                dirname( # macwinnie/wp-db-phinx-helper
-                    dirname( # macwinnie/wp-db-phinx-helper/src
-                        __FILE__
-                    )
-                )
-            )
-        );
-
-        $basepath = dirname($vendorpath);
+        $basepath = static::get_plugin_dir();
         while ( ! file_exists( implode( DIRECTORY_SEPARATOR, [ $basepath, 'composer.json' ] ) ) ) {
             $basepath = dirname($basepath);
         }
