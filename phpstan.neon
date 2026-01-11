@@ -1,0 +1,16 @@
+parameters:
+    level: max
+    paths:
+        - src
+        - examples
+        - tests
+    excludePaths:
+        - ./vendor/*
+        - ./stubs/*
+    bootstrapFiles:
+        - stubs/constants-stub.php
+        - vendor/autoload.php
+    ignoreErrors: []
+
+includes:
+    - vendor/szepeviktor/phpstan-wordpress/extension.neon

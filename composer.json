@@ -1,25 +1,91 @@
 {
-  "name": "macwinnie/wp-db-phinx-helper",
-  "description": "Helper for WordPress plugins to be able to use [Phinx](https://phinx.org/) for DB migrations",
-  "version": "0.1.8",
-  "type": "library",
-  "require": {
-    "robmorgan/phinx": "^0.16.1",
-    "composer/composer": "^2.7"
-  },
-  "license": "Apache-2.0",
-  "autoload": {
-    "psr-4": {
-      "Macwinnie\\WpDbPhinxHelper\\": "src/"
+    "name": "macwinnie/wp-db-phinx-helper",
+    "description": "Helper for WordPress plugins to be able to use [Phinx](https://phinx.org/) for DB migrations",
+    "version": "1.0.0",
+    "type": "library",
+    "require": {
+        "php": ">=8.1",
+        "composer/composer": "^2.7",
+        "ramsey/uuid": "^4.9",
+        "robmorgan/phinx": "^0.16.1",
+        "symfony/console": "^7.4"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.91",
+        "mikey179/vfsstream": "^1.6",
+        "mockery/mockery": "^1.6",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^12.5",
+        "squizlabs/php_codesniffer": "^4.0",
+        "szepeviktor/phpstan-wordpress": "^2.0"
+    },
+    "license": "Apache-2.0",
+    "autoload": {
+        "psr-4": {
+            "Macwinnie\\WpDbPhinxHelper\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Macwinnie\\WpDbPhinxHelper\\Tests\\": "tests/",
+            "Macwinnie\\WpDbPhinxHelper\\Examples\\": "examples/"
+        },
+        "exclude-from-classmap": [
+            "tests/bootstrap.php",
+            "examples/Migrations/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "macwinnie",
+            "email": "dev@macwinnie.me"
+        }
+    ],
+    "post-package-install": [
+        "Macwinnie\\WpDbPhinxHelper\\DBUtilisator::setup"
+    ],
+    "scripts": {
+        "test": [
+            "@php vendor/bin/phpunit"
+        ],
+        "test:coverage": [
+            "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-html coverage/html --coverage-text"
+        ],
+        "test:coverage-clover": [
+            "XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-clover coverage/clover.xml"
+        ],
+        "analyse": [
+            "@php vendor/bin/phpstan analyse src tests --level=8"
+        ],
+        "cs:check": [
+            "@php vendor/bin/php-cs-fixer fix --dry-run --diff"
+        ],
+        "cs:fix": [
+            "@php vendor/bin/php-cs-fixer fix"
+        ],
+        "qa": [
+            "@test",
+            "@analyse",
+            "@cs:check"
+        ]
+    },
+    "scripts-descriptions": {
+        "test": "Run all tests",
+        "test:unit": "Run unit tests only",
+        "test:integration": "Run integration tests only",
+        "test:coverage": "Run tests with HTML coverage report",
+        "test:coverage-clover": "Run tests with Clover XML coverage report",
+        "analyse": "Run static analysis with PHPStan",
+        "cs:check": "Check code style",
+        "cs:fix": "Fix code style issues",
+        "qa": "Run all quality assurance checks"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     }
-  },
-  "authors": [
-    {
-      "name": "macwinnie",
-      "email": "dev@macwinnie.me"
-    }
-  ],
-  "post-package-install": [
-    "Macwinnie\\WpDbPhinxHelper\\DBUtilisator::setup"
-  ]
 }

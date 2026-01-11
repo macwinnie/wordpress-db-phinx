@@ -1,0 +1,63 @@
+{
+   "yourplugin_auth_users" : [
+      {"column_name": "id", "column_type": "bigint"},
+      {"column_name": "uuid", "column_type": "varchar(36)"},
+      {"column_name": "name", "column_type": "varchar(255)"},
+      {"column_name": "email", "column_type": "varchar(255)"},
+      {"column_name": "password_hash", "column_type": "varchar(255)"},
+      {"column_name": "email_verified_at", "column_type": "timestamp"},
+      {"column_name": "created_at", "column_type": "timestamp"},
+      {"column_name": "updated_at", "column_type": "timestamp"}
+   ],
+   "yourplugin_categories" : [
+      {"column_name": "id", "column_type": "bigint"},
+      {"column_name": "uuid", "column_type": "varchar(36)"},
+      {"column_name": "slug", "column_type": "varchar(250)"},
+      {"column_name": "name", "column_type": "varchar(255)"},
+      {"column_name": "description", "column_type": "text(65535)"},
+      {"column_name": "is_active", "column_type": "tinyint"},
+      {"column_name": "created_at", "column_type": "timestamp"},
+      {"column_name": "updated_at", "column_type": "timestamp"}
+   ],
+   "yourplugin_posts" : [
+      {"column_name": "id", "column_type": "bigint"},
+      {"column_name": "slug", "column_type": "varchar(250)"},
+      {"column_name": "title", "column_type": "varchar(255)"},
+      {"column_name": "content", "column_type": "text(65535)"},
+      {"column_name": "created_at", "column_type": "timestamp"},
+      {"column_name": "updated_at", "column_type": "timestamp"}
+   ],
+   "yourplugin_products" : [
+      {"column_name": "id", "column_type": "bigint"},
+      {"column_name": "uuid", "column_type": "varchar(36)"},
+      {"column_name": "name", "column_type": "varchar(255)"},
+      {"column_name": "email", "column_type": "varchar(255)"},
+      {"column_name": "created_at", "column_type": "timestamp"},
+      {"column_name": "updated_at", "column_type": "timestamp"}
+   ],
+   "yourplugin_users" : [
+      {"column_name": "id", "column_type": "bigint"},
+      {"column_name": "name", "column_type": "varchar(255)"},
+      {"column_name": "email", "column_type": "varchar(255)"},
+      {"column_name": "created_at", "column_type": "timestamp"},
+      {"column_name": "updated_at", "column_type": "timestamp"}
+   ],
+   "test_posts": [
+      {"column_name": "id", "column_type": "bigint(20) unsigned"},
+      {"column_name": "uuid", "column_type": "char(36)"},
+      {"column_name": "slug", "column_type": "varchar(255)"},
+      {"column_name": "title", "column_type": "varchar(255)"},
+      {"column_name": "content", "column_type": "text"},
+      {"column_name": "created_at", "column_type": "datetime"},
+      {"column_name": "updated_at", "column_type": "datetime"},
+      {"column_name": "content_hash", "column_type": "char(64)"}
+   ],
+   "non_uuid_posts": [
+      {"column_name": "id", "column_type": "bigint(20) unsigned"},
+      {"column_name": "title", "column_type": "varchar(255)"},
+      {"column_name": "content", "column_type": "text"},
+      {"column_name": "created_at", "column_type": "datetime"},
+      {"column_name": "updated_at", "column_type": "datetime"},
+      {"column_name": "content_hash", "column_type": "char(64)"}
+   ]
+}

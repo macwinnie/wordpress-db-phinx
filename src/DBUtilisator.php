@@ -8,7 +8,6 @@ use Symfony\Component\Console\Input\StringInput;
 use Symfony\Component\Console\Output\NullOutput;
 
 abstract class DBUtilisator {
-
     /**
      * The protected static variable is the name of the phinx config file residing in the
      * plugin root folder. Not to be changed.
@@ -38,7 +37,7 @@ abstract class DBUtilisator {
      * // ...
      * ```
      *
-     * Make sure, your constant is a uique name which does not cause name conflicts!
+     * Make sure, your constant is a uique name which does not cause name conflicts within WP ecosystem!
      *
      * @return string plugin root path
      */
@@ -60,34 +59,60 @@ abstract class DBUtilisator {
      * method to retrieve the root path of the wordpress installation
      * @return string root path of WordPress, not plugin
      */
-    public static function get_wp_main_path() {
-        $wp_main_path = realpath( __DIR__ );
+    public static function get_wp_main_path(): string {
+        // Start from the directory of this file, ensure it’s a valid path
+        $wp_main_path = self::assertValidPath(realpath(__DIR__));
+
         while (
-            ! file_exists( implode( DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-admin' ] ) ) and
-            ! file_exists( implode( DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-content' ] ) ) and
-            ! file_exists( implode( DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-load.php' ] ) )
+            ! file_exists(implode(DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-admin' ])) and
+            ! file_exists(implode(DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-content' ])) and
+            ! file_exists(implode(DIRECTORY_SEPARATOR, [ $wp_main_path, 'wp-load.php' ]))
         ) {
-            $wp_main_path = realpath( dirname( $wp_main_path ));
-            if ( $wp_main_path == DIRECTORY_SEPARATOR ) {
+
+            // Climb one level up
+            $parent = dirname($wp_main_path);
+
+            // If we can’t climb further, there is no WP installation
+            if ($parent === $wp_main_path || $parent === DIRECTORY_SEPARATOR) {
                 throw new \Exception("No WordPress installation found.", 1);
             }
+
+            // Normalize / validate the parent path, using the same error logic
+            $wp_main_path = self::assertValidPath(realpath($parent));
         }
+
         return $wp_main_path;
+    }
+
+    /**
+     * Normalize a path from realpath() and throw a single, shared error
+     * if it is invalid.
+     *
+     * @param  string|false  $path
+     * @return string
+     */
+    private static function assertValidPath(string|false $path): string {
+        if ($path === false) {
+            throw new \Exception("No path found.", 1);
+        }
+
+        return $path;
     }
 
     /**
      * Using the static method `get_plugin_dir` to do some directory retrievals
      *
-     * @param  boolean $checkSetup shall the Phinx setup be checked? Default is `true`.
+     * @param  bool $checkSetup shall the Phinx setup be checked? Default is `true`.
      * @return string              plugin path / base path of closest location containing a `composer.json` file
      */
     protected static function basePath($checkSetup = true) {
         $basepath = static::get_plugin_dir();
-        while ( ! file_exists( implode( DIRECTORY_SEPARATOR, [ $basepath, 'composer.json' ] ) ) ) {
+
+        while (! file_exists(implode(DIRECTORY_SEPARATOR, [ $basepath, 'composer.json' ]))) {
             $basepath = dirname($basepath);
         }
 
-        if ( $checkSetup and ! file_exists( implode(DIRECTORY_SEPARATOR, [$basepath, static::$scriptname]) ) ) {
+        if ($checkSetup and ! file_exists(implode(DIRECTORY_SEPARATOR, [$basepath, static::$scriptname]))) {
             static::setup();
         }
 
@@ -96,22 +121,29 @@ abstract class DBUtilisator {
 
     /**
      * building the phinx config out of WordPress variables to not keep duplicate config
-     * @return [string] Phinx config for WordPress, see https://book.cakephp.org/phinx/0/en/configuration.html
+     * @return array<string, mixed> Phinx config for WordPress, see https://book.cakephp.org/phinx/0/en/configuration.html
      */
-    public static function get_phinx_config () {
+    public static function get_phinx_config() {
         $base = static::basePath();
 
+        /** @var \wpdb $wpdb */
         global $wpdb;
 
-        $dbhost_parts = explode(':', $wpdb->dbhost);
+        /** @var string $dbhost */
+        $dbhost = (string) $wpdb->dbhost;
+
+        /** @var list<string> $dbhost_parts */
+        $dbhost_parts = explode(':', $dbhost);
+
         if (count($dbhost_parts) == 1) {
+            // set default port for being confident about the DB Port
             $dbhost_parts[] = "3306";
         }
 
         $phinx_config = [
             'paths' => [
-                'migrations' => implode( DIRECTORY_SEPARATOR, [ $base, 'db', 'migrations' ] ),
-                'seeds' => implode( DIRECTORY_SEPARATOR, [ $base, 'db', 'seeds' ] ),
+                'migrations' => implode(DIRECTORY_SEPARATOR, [ $base, 'db', 'migrations' ]),
+                'seeds' => implode(DIRECTORY_SEPARATOR, [ $base, 'db', 'seeds' ]),
             ],
             'environments' => [
                 'default_migration_table' => $wpdb->prefix . static::$phinx_migration_table,
@@ -126,7 +158,7 @@ abstract class DBUtilisator {
                     'charset' => $wpdb->charset,
                     'collation' => $wpdb->collate,
                     'table_prefix' => $wpdb->prefix,
-                ]
+                ],
             ],
             'version_order' => static::$phinx_version_order,
         ];
@@ -136,7 +168,7 @@ abstract class DBUtilisator {
 
     /**
      * prepare Phinx for execution
-     * @return Phinx\Migration\Manager Phinx Manager object to interact with
+     * @return Manager  Phinx Manager object to interact with
      */
     protected static function prepare_phinx() {
         $phinx_config = static::get_phinx_config();
@@ -163,9 +195,10 @@ abstract class DBUtilisator {
      * @return void
      */
     public static function setup(): void {
-        $phinxfile = implode(DIRECTORY_SEPARATOR, [ dirname(dirname(__FILE__)), 'files', static::$scriptname,]);
+        $phinxfile = implode(DIRECTORY_SEPARATOR, [ dirname(__FILE__), 'files', static::$scriptname,]);
         $destination = implode(DIRECTORY_SEPARATOR, [ static::basePath(false), static::$scriptname,]);
-        if ( ! file_exists($destination) ) {
+
+        if (! file_exists($destination)) {
             touch($destination);
             copy($phinxfile, $destination);
         }
@@ -177,7 +210,7 @@ abstract class DBUtilisator {
      * in child classes!
      * @return void
      */
-    public static function plugin_activation_method (): void {
+    public static function plugin_activation_method(): void {
         static::setup();
     }
 
@@ -186,9 +219,8 @@ abstract class DBUtilisator {
      * in child classes!
      * @return void
      */
-    public static function plugin_uninstall_method (): void {
+    public static function plugin_uninstall_method(): void {
         $phinx = static::prepare_phinx();
         $phinx->rollback('wordpress', 'all', true);
     }
-
 }
